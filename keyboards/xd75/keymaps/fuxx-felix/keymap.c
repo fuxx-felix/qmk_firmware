@@ -66,3 +66,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, MO(_FN), UK_LALT, RGB_TOG, RGB_M_T, _______, UK_P0,   _______, UK_PDOT, UK_PENT, _______, MO(_FN), _______, _______, KC_MUTE
   )
 };
+
+uint32_t layer_state_set_user(uint32_t state) {
+  switch(biton32(state)) {
+  case _QW:
+    rgblight_sethsv_orange();
+    break;
+  case _FN:
+    rgblight_sethsv_red();
+    break;
+  default:
+    rgblight_sethsv_blue();
+    break;
+  }
+
+  return state;
+}
