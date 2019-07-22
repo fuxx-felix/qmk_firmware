@@ -78,10 +78,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 static uint16_t idle_timer = 0;
 static uint8_t halfmin_counter = 0;
 static bool standby = false;
-static uint32_t rgb_mode = RGB_DEFAULT_MODE;
-static uint32_t rgb_hue;
-static uint32_t rgb_sat;
-static uint32_t rgb_val;
+static uint8_t rgb_mode = RGB_DEFAULT_MODE;
+static uint8_t rgb_colour[3] = {RGB_DEFAULT_COLOUR};
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   idle_timer = timer_read();
@@ -89,7 +87,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     standby = false;
     halfmin_counter = 0;
     rgblight_mode(rgb_mode);
-    rgblight_sethsv(rgb_hue, rgb_sat, rgb_val);
+    rgblight_sethsv(rgb_colour[0], rgb_colour[1], rgb_colour[2]);
   }
   return true;
 }
@@ -104,9 +102,9 @@ void matrix_scan_user(void) {
     // Note: Half min counter required to prevent integer overflow
     if (halfmin_counter >= IDLE * 2) {
       rgb_mode = rgblight_get_mode();
-      rgb_hue = rgblight_get_hue();
-      rgb_sat = rgblight_get_sat();
-      rgb_val = rgblight_get_val();
+      rgb_colour[0] = rgblight_get_hue();
+      rgb_colour[1] = rgblight_get_sat();
+      rgb_colour[2] = rgblight_get_val();
       standby = true;
       rgblight_mode(RGB_IDLE_MODE);
       rgblight_sethsv(RGB_IDLE_COLOUR);
