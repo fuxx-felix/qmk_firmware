@@ -16,6 +16,14 @@
 #include QMK_KEYBOARD_H
 #include "keymap_uk.h"
 
+// Keyboard timeout in min
+#define IDLE 5
+#define RGB_DEFAULT_MODE 1
+#define RGB_DEFAULT_COLOUR HSV_ORANGE
+#define RGB_IDLE_MODE 22
+#define RGB_IDLE_COLOUR HSV_GREEN
+#define RGB_FN_COLOUR HSV_RED
+
 // Layer shorthand
 #define _QW 0
 #define _FN 1
@@ -67,16 +75,55 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   )
 };
 
+static uint16_t idle_timer = 0;
+static uint8_t halfmin_counter = 0;
+static bool standby = false;
+static uint32_t rgb_mode = RGB_DEFAULT_MODE;
+static uint32_t rgb_hue;
+static uint32_t rgb_sat;
+static uint32_t rgb_val;
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  idle_timer = timer_read();
+  if(standby == true) {
+    standby = false;
+    halfmin_counter = 0;
+    rgblight_mode(rgb_mode);
+    rgblight_sethsv(rgb_hue, rgb_sat, rgb_val);
+  }
+  return true;
+}
+
+void matrix_scan_user(void) {
+  if (standby == false) {
+    if (timer_elapsed(idle_timer) > 30000) {
+      halfmin_counter++;
+      idle_timer = timer_read();
+    }
+
+    // Note: Half min counter required to prevent integer overflow
+    if (halfmin_counter >= IDLE * 2) {
+      rgb_mode = rgblight_get_mode();
+      rgb_hue = rgblight_get_hue();
+      rgb_sat = rgblight_get_sat();
+      rgb_val = rgblight_get_val();
+      standby = true;
+      rgblight_mode(RGB_IDLE_MODE);
+      rgblight_sethsv(RGB_IDLE_COLOUR);
+    }
+  }
+}
+
 uint32_t layer_state_set_user(uint32_t state) {
   switch(biton32(state)) {
   case _QW:
-    rgblight_sethsv_orange();
+    rgblight_sethsv(RGB_DEFAULT_COLOUR);
     break;
   case _FN:
-    rgblight_sethsv_red();
+    rgblight_sethsv(RGB_FN_COLOUR);
     break;
   default:
-    rgblight_sethsv_blue();
+    rgblight_sethsv(RGB_DEFAULT_COLOUR);
     break;
   }
 
