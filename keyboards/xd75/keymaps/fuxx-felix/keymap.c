@@ -83,9 +83,9 @@ static uint8_t rgb_colour[3] = {RGB_DEFAULT_COLOUR};
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   idle_timer = timer_read();
+  halfmin_counter = 0;
   if(standby == true) {
     standby = false;
-    halfmin_counter = 0;
     rgblight_mode(rgb_mode);
     rgblight_sethsv(rgb_colour[0], rgb_colour[1], rgb_colour[2]);
   }
